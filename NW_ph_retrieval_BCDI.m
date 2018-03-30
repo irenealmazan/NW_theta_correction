@@ -26,7 +26,7 @@ if flagContinue == 0
     
     % initial guess and initial error:
     rho_ini = rand(Npix,Npix,depth).* exp(i*2*pi*rand(Npix,Npix,depth));
-    [scale_fact,err_scale_fact] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,[1],ki_o,kf_o,X,Y,Z);
+    [scale_fact,err_scale_fact,angles_list] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,[1],ki_o,kf_o,X,Y,Z);
     scale_fact = 1;%1.5e-4; % scale factor for random ini
     rho = rho_ini.*scale_fact .* support;
     
@@ -48,13 +48,13 @@ for nrho = 1:Niter_rho
 
     if(1)
 
-        [rho,beta_rho] = Phretrieval_functions.rho_update(probe, rho, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
+        [rho_new,beta_rho] = Phretrieval_functions.rho_update(probe, rho, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
 
         % multiply by the support:
-        rho = rho .*support;
+        rho = rho_new .*support;
             
         
-        [err] = DiffractionPaterns.calc_error_multiangle(probe, rho, data_exp,ki_o,kf_o,X,Y,Z);
+        [err] = DiffractionPatterns.calc_error_multiangle(probe, rho, data_exp,angles_list,ki_o,kf_o,X,Y,Z);
         fprintf('\n     error: %4.4d \n', err);
         errlist = [errlist err];
 
@@ -75,19 +75,19 @@ for nrho = 1:Niter_rho
     tic;
     if mod(nrho,freq_pos) == 0
 
-        [dth_new,dq_shift,grad_final_theta,beta_theta] = Phretrieval_functions.theta_correction(probe, rho,data_exp,Niter_theta,th,errlist(end));
+        [angles_list,dq_shift,grad_final_theta,beta_theta] = Phretrieval_functions.theta_update(probe, rho,data_exp,Niter_theta,th,errlist(end));
 
-        % store the shift
+        % store the updated theta list
         for ii = 1:numel(data_exp)%index_to_distort%
            data_exp(ii).dqshift(:) = dq_shift(ii,:); 
-           data_exp(ii).dth_iter = dth_new(ii);
+           data_exp(ii).dth_iter = angles_list(ii);
            data_exp(ii).theta_iter(cnt_ntheta).grad_final = grad_final_theta(ii);
            data_exp(ii).theta_iter(cnt_ntheta).beta = beta_theta;
-           data_exp(ii).theta_iter(cnt_ntheta).dth_new_iter = dth_new(ii);
+           data_exp(ii).theta_iter(cnt_ntheta).dth_new_iter = angles_list(ii);
            data_exp(ii).theta_iter(cnt_ntheta).dqshift(:) = dq_shift(ii,:);
         end
 
-        [err] = DiffractionPaterns.calc_error_multiangle(probe, rho, data_exp);
+        [err] = DiffractionPatterns.calc_error_multiangle(probe, rho, data_exp,angles_list,ki_o,kf_o,X,Y,Z);
         fprintf('     error: %4.4d \n', err);
         errlist = [errlist err];
 

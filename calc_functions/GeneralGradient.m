@@ -16,7 +16,7 @@ classdef GeneralGradient
             for ii=1:numel(data)
                 
                 
-                [~,~,Psij,~,Qterm] = DiffractionPaterns.calc_single_dp(data(ii).dqshift,probe,rho,X,Y,Z);
+                [~,~,Psij,~,Qterm] = DiffractionPatterns.calc_single_dp(data(ii).dqshift,probe,rho,X,Y,Z);
                 
                 Psig = flipud(sqrt(data(ii).I)).*exp(i*angle(Psij));%
                 grad = Psij - Psig; %%%% NEW % Psij - Psig;
@@ -67,7 +67,7 @@ classdef GeneralGradient
             grad_final_theta = -2*sum(sum(grad_theta))/(numel(grad_theta));
                        
             %%% check that you calculate the gradient:
-            error_theta_integ = DiffractionPaterns.calc_error_multiangle(probe, rho, data,ki,kf,X,Y,Z);
+            error_theta_integ = DiffractionPatterns.calc_error_multiangle(probe, rho, data,data.dth_iter,ki,kf,X,Y,Z);
             %display_calc_grad_theta(probe, rho, data, dth_nominal,grad_final_theta,error_theta_integ)
             %display_calc_grad2_theta(probe, rho, data, dth_nominal,grad2_final_theta,grad_final_theta)
             
@@ -118,7 +118,104 @@ classdef GeneralGradient
             
         end
         
-        
+        function [alpha_iter,err_plusalpha,alpha_track] = calc_beta_adaptative_step(probe, rho, data,gradtot,err_0,direction,flag,ki,kf,X,Y,Z)
+            % this function calculates the adaptative step length for the
+            % correction of the rho. We folllow Nocedal "Backtracking Line Search
+            % The imputs are the following:
+            %   probe: information about the beam (important in ptychography)
+            %   rho: the object in its current state (before the update)
+            %   data: structure containing the angles
+            %   gradtot: vector with all the gradients for each angle
+            
+            
+            
+            % Armijo's condition: if err(alpha_i) > err(alpha=0) +
+            % c1*deriv_err_with_theta *alpha_i
+            
+            % calculate the value of alpha_ini that we choose as the value for
+            % which the linear approximation of the error metric becomes positive
+            c1 = 1e-3; % see Nocedal
+            counter = 1; % counter to track the evolution of the error, alpha and the approximation of the error with the iterations
+            counter_max = 5;
+            tau_backtrack = 0.01;
+            err_linear_aprox(counter) = - err_0;
+            
+            slope_alpha_0 = c1*real(direction(:)'*gradtot(:));
+            alpha_ini = 1;%-err_0/(slope_alpha_0);
+            
+            % rho/theta at initial alapha
+            theta_alpha = zeros(numel(data),1);
+            switch flag
+                
+                case 'rho'
+                    rho_alpha = rho + alpha_ini * direction;
+                    for ii=1:numel(data)
+                        theta_alpha(ii) = data(ii).dth_iter;
+                    end
+                case 'theta'
+                    rho_alpha = rho;
+                    for ii=1:numel(data)
+                        theta_alpha(ii) = data(ii).dth_iter +alpha_ini * gradtot(ii);
+                    end
+            end
+            
+            % estimate the value of the error at rho + alpha_ini*gradtot_rho
+            err_plusalpha(counter) =  DiffractionPatterns.calc_error_multiangle(probe, rho_alpha, data,theta_alpha,ki,kf,X,Y,Z);
+            
+            Delta_err(counter) = err_plusalpha(counter) - err_0;
+            
+            alpha_iter = alpha_ini;
+            
+            alpha_track(counter) = alpha_iter;
+            
+            while( Delta_err(counter) >= err_linear_aprox(counter))
+                
+                % update the counter
+                counter = counter + 1;
+                
+                % update alpha
+                alpha_iter = alpha_iter*tau_backtrack;
+                
+                % move rho
+                switch flag
+                    
+                    case 'rho'
+                        rho_alpha = rho + alpha_iter * direction;
+                        
+                    case 'theta'
+                        for ii=1:numel(data)
+                            theta_alpha(ii) = data(ii).dth_iter +alpha_iter*gradtot(ii);
+                        end
+                end
+                
+                
+                % estimate the value of the error at rho + alpha_ini*gradtot_rho
+                err_plusalpha(counter) =  DiffractionPatterns.calc_error_multiangle(probe, rho_alpha, data,theta_alpha,ki,kf,X,Y,Z);
+                
+                
+                %recalculate the difference between error metric at alpha_iter and
+                %error metric at alpha = 0
+                Delta_err(counter) = err_plusalpha(counter) - err_0;
+                
+                % calculate the linear approximation of the error metric
+                err_linear_aprox(counter) =  alpha_iter*slope_alpha_0;
+                
+                display(['err(' num2str(alpha_iter) ' ) - err(0) = ' num2str(Delta_err(counter)) ' and linear approx. ' num2str(err_linear_aprox(counter))])
+                
+                alpha_track(counter) = alpha_iter;
+                
+                if counter > counter_max
+                    display('beta not found');
+                    break;
+                    
+                end
+                
+            end
+            
+            
+            
+            
+        end
     end
         
    

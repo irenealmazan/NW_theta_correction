@@ -46,112 +46,26 @@ classdef Phretrieval_functions
             
         end
         
-        function [scale_fact,errtot] = ini_guess_scalefactor(probe_BCDI, rho_ini, data,scale_fact_guess,ki,kf,X,Y,Z)
+        function [scale_fact,errtot,angles_list] = ini_guess_scalefactor(probe_BCDI, rho_ini, data,scale_fact_guess,ki,kf,X,Y,Z)
             % This function estimates the scaling factor by which the initial guess
             % has to be calculated in order to establish good initial conditions
             % for phase retrieval.
             
             errtot = zeros(numel(scale_fact_guess),1);
+            angles_list = zeros(numel(data),1);
+            for ii = 1:numel(data)
+                angles_list(ii) = data(ii).dth_iter;
+            end
             
             for jj=1:numel(scale_fact_guess)
-                
-                rho_ini_scale = rho_ini.*scale_fact_guess(jj);
-                
-                
-                [errtot(jj)] = DiffractionPaterns.calc_error_multiangle(probe_BCDI, rho_ini_scale, data,ki,kf,X,Y,Z);
-                
+                rho_ini_scale = rho_ini.*scale_fact_guess(jj);                
+                [errtot(jj)] = DiffractionPatterns.calc_error_multiangle(probe_BCDI, rho_ini_scale, data,angles_list,ki,kf,X,Y,Z);                
             end
             
             scale_fact = scale_fact_guess(find(min(errtot)==errtot));
             
         end
-        
-        function [alpha_iter,err_plusalpha,alpha_track] = calc_beta_adaptative_step(probe, rho, data,gradtot,err_0,direction,flag,ki,kf,X,Y,Z)
-            % this function calculates the adaptative step length for the
-            % correction of the rho. We folllow Nocedal "Backtracking Line Search
-            % The imputs are the following:
-            %   probe: information about the beam (important in ptychography)
-            %   rho: the object in its current state (before the update)
-            %   data: structure containing the angles
-            %   gradtot: vector with all the gradients for each angle
-            
-            
-            
-            % Armijo's condition: if err(alpha_i) > err(alpha=0) +
-            % c1*deriv_err_with_theta *alpha_i
-            
-            % calculate the value of alpha_ini that we choose as the value for
-            % which the linear approximation of the error metric becomes positive
-            c1 = 1e-3; % see Nocedal
-            counter = 1; % counter to track the evolution of the error, alpha and the approximation of the error with the iterations
-            counter_max = 5;
-            tau_backtrack = 0.01;
-            err_linear_aprox(counter) = - err_0;
-            
-            slope_alpha_0 = c1*real(direction(:)'*gradtot(:));
-            alpha_ini = 1;%-err_0/(slope_alpha_0);
-            
-            % rho at initial alpha
-            rho_alpha = rho + alpha_ini * direction;
-            
-            % estimate the value of the error at rho + alpha_ini*gradtot_rho
-            err_plusalpha(counter) =  DiffractionPaterns.calc_error_multiangle(probe, rho_alpha, data,ki,kf,X,Y,Z);
-            
-            Delta_err(counter) = err_plusalpha(counter) - err_0;
-            
-            alpha_iter = alpha_ini;
-            
-            alpha_track(counter) = alpha_iter;
-            
-            while( Delta_err(counter) >= err_linear_aprox(counter))
                 
-                % update the counter
-                counter = counter + 1;
-                
-                % update alpha
-                alpha_iter = alpha_iter*tau_backtrack;
-                
-                % move rho
-                switch flag
-                    
-                    case 'rho'
-                        rho_alpha = rho + alpha_iter * direction;
-                        
-                    case 'theta'
-                        for ii=1:numel(data)
-                            data(ii).dth_iter = data(ii).dth_new +alpha_iter*gradtot(ii);
-                        end
-                end
-                
-                
-                % estimate the value of the error at rho + alpha_ini*gradtot_rho
-                err_plusalpha(counter) =  DiffractionPaterns.calc_error_multiangle(probe, rho_alpha, data,ki,kf,X,Y,Z);
-                
-                
-                %recalculate the difference between error metric at alpha_iter and
-                %error metric at alpha = 0
-                Delta_err(counter) = err_plusalpha(counter) - err_0;
-                
-                % calculate the linear approximation of the error metric
-                err_linear_aprox(counter) =  alpha_iter*slope_alpha_0;
-                
-                display(['err(' num2str(alpha_iter) ' ) - err(0) = ' num2str(Delta_err(counter)) ' and linear approx. ' num2str(err_linear_aprox(counter))])
-                
-                alpha_track(counter) = alpha_iter;
-                
-                if counter > counter_max
-                    display('beta not found');
-                    break;
-                    
-                end
-                
-            end
-            
-            
-            
-            
-        end       
-        
         function [rho_new,beta_rho] = rho_update(probe, rho, data_exp,depth,err_0,ki,kf,X,Y,Z)
             % this functions updates rho
             
@@ -165,14 +79,14 @@ classdef Phretrieval_functions
             direction_rho = - (D/depth)*gPIEiter;
             
             % calculate the adaptative step length
-            [beta_rho] = Phretrieval_functions.calc_beta_adaptative_step(probe, rho, data_exp,gPIEiter,err_0,direction_rho,'rho',ki,kf,X,Y,Z);
+            [beta_rho] = GeneralGradient.calc_beta_adaptative_step(probe, rho, data_exp,gPIEiter,err_0,direction_rho,'rho',ki,kf,X,Y,Z);
             
             % update the object:
             rho_new = rho + beta_rho * direction_rho;
                                  
         end
         
-        function [dth_new,dq_shift,grad_final_theta,beta] = theta_correction(probe, rho,data_exp,Niter_theta,dthBragg,error_0)
+        function [dth_new,dq_shift,grad_final_theta,beta] = theta_update(probe, rho,data_exp,Niter_theta,dthBragg,error_0)
             %%% this function calculates the gradient of the error metric with
             %%% respect to the position of the angles analytically, and
             %%% the correction theta  step
@@ -208,13 +122,13 @@ classdef Phretrieval_functions
                 direction = -grad_final_theta;
                 
                 % calculate an adaptative step size:
-                [beta] = Phretrieval_functions.calc_beta_adaptative_thetastep(bmtemp, rho, data_exp,grad_final_theta,error_0,direction,'theta');
+                [beta] = GeneralGradient.calc_beta_adaptative_step(probe, rho, data_exp,grad_final_theta,error_0,direction,'theta',ki_o,kf_o,X,Y,Z);
                 
                 % corrected theta :
                 dth_new = dth_new + beta* direction;
                 
                 % corrected dqshift:               
-                [dq_shift] = calc_dqshift_for_given_th(dth_new,ki_o,kf_o,qbragg);                                 
+                [dq_shift] = DiffractionPatterns.calc_dqshift_for_given_th(dth_new,ki_o,kf_o,qbragg);                                 
                 
                 
             end

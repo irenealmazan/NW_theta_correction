@@ -53,7 +53,7 @@ classdef DiffractionPatterns
         
         
         
-        function [errtot] = calc_error_multiangle(probe, rho, data,ki,kf,X,Y,Z)
+        function [errtot] = calc_error_multiangle(probe, rho, data,angles,ki,kf,X,Y,Z)
            % This function calculates the diffracted intensities
            % differences for the set of data in the the structure "data"
            
@@ -65,9 +65,9 @@ classdef DiffractionPatterns
             
             for ii=1:numel(data)
                 
-                [dq_shift(ii,:)] = DiffractionPaterns.calc_dqshift_for_given_th(data(ii).dth_iter,ki,kf,qbragg);
+                [dq_shift(ii,:)] = DiffractionPatterns.calc_dqshift_for_given_th(angles(ii),ki,kf,qbragg);
                 
-                [Psij_mod] = DiffractionPaterns.calc_single_dp( dq_shift(ii,:),probe,rho,X,Y,Z);
+                [Psij_mod] = DiffractionPatterns.calc_single_dp( dq_shift(ii,:),probe,rho,X,Y,Z);
                                 
                 err = sqrt(data(ii).I) - sqrt(Psij_mod);
                 err = sum(err(:).^2)/numel(err);
