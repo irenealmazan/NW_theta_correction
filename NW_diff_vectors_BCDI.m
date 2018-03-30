@@ -42,7 +42,7 @@ kf_o_list = ki_list * kmag;
 
 % do the meshgrid:
 
-th_pixel_size = 2*pi/abs((dqlist(end,3) - dqlist(1,3)));
+th_pixel_size = 2*pi/abs((dqlist_o(end,3) - dqlist_o(1,3)));
 
 [X,Y,Z] = meshgrid([-Npix/2:Npix/2-1]*d2_bragg, ...
                     [-Npix/2:Npix/2-1]*d2_bragg,...

@@ -20,7 +20,7 @@ quiver3(0,0,0, ki(1), ki(2), ki(3), 'r');
 quiver3(0,0,0, kf(1), kf(2), kf(3), 'k');
 quiver3(0,0,0, qbragg(1), qbragg(2), qbragg(3), 'b');
 
-if plotdqshif
+if plotdqshift
     for ii=1:numel(delta_thscanvals)   
         quiver3(0,0,0, ki_list(ii,1), ki_list(ii,2), ki_list(ii,3), 'r--');
         quiver3(0,0,0, dqlist(ii,1), dqlist(ii,2), dqlist(ii,3), 'r--');            

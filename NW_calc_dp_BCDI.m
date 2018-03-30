@@ -6,7 +6,7 @@ dth_disp = zeros(numel(delta_thscanvals),1);
 rock_curve = zeros(numel(delta_thscanvals),1);
 dq_shift_nominal = zeros(numel(delta_thscanvals),3);
 dq_shift_real = zeros(numel(delta_thscanvals),3);
-mxI = zeros(size(thscanlist));
+mxI = zeros(size(delta_thscanvals));
 im_sum_sim = zeros(Npix);
 
 % distortion:
@@ -20,18 +20,18 @@ for ii = 1:numel(delta_thscanvals)
      
     [dq_shift_real(ii,:)] = DiffractionPaterns.calc_dqshift_for_given_th(delta_thscanvals(ii) + dth_disp(ii),ki_o,kf_o,qbragg);
     
-    [ simI,rock_curve(ii),Proj_vol,FT_Proj_vol] = DiffractionPaterns.calc_single_dp(dq_shift_real(ii,:),probe,rho);
+    [ simI,rock_curve(ii),Proj_vol,FT_Proj_vol] = DiffractionPaterns.calc_single_dp(dq_shift_real(ii,:),probe,NW,X,Y,Z);
   
     
-     mxI(ii) = max(simI);
+     mxI(ii) = max(max(simI));
      
      im_sum_sim = im_sum_sim + simI;    
     
      % store angles, dqshifts and diffraction patterns in structure
-    data_exp(ii).dth_real = delta_thscanvals(ii)+dth_delta_list(ii);
+    data_exp(ii).dth_real = delta_thscanvals(ii)+dth_disp(ii);
     data_exp(ii).dth_nominal = delta_thscanvals(ii);
-    data_exp(ii).dth_iter = fly2Danglist(ii)-thBragg;
-    data_exp(ii).dth_delta = dth_delta_list(ii);
+    data_exp(ii).dth_iter = delta_thscanvals(ii)-th;
+    data_exp(ii).dth_disp = delta_thscanvals(ii);
     data_exp(ii).dshift_nominal = dq_shift_nominal;
     data_exp(ii).dqshift_real = dq_shift_real(ii,:);
     data_exp(ii).dqshift = dq_shift_real(ii,:); % initial value of dq
@@ -46,7 +46,7 @@ for ii = 1:numel(delta_thscanvals)
         axis image; 
         
         subplot(122); 
-        imagesc(abs(FT_Proj_vol));
+        imagesc(simI);
         axis image;
         
         drawnow;
@@ -60,5 +60,5 @@ middpind = round(numel(data_exp)/2);
     
 % plot rocking curve: 
 figure;
-plot(fly2Danglist-thBragg,rock_curve,'*r');
+plot(delta_thscanvals,rock_curve,'*r');
 title('distorted rocking curve');
