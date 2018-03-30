@@ -29,7 +29,7 @@ dqlist = zeros(numel(delta_thscanvals), 3);
 ki_list = zeros(numel(delta_thscanvals), 3);
 kf_list = zeros(numel(delta_thscanvals), 3);
 
-[dqlist,ki_list,kf_list] = DiffractionPaterns.calc_dqshift_for_given_th(delta_thscanvals,ki_o,kf_o,qbragg_o);
+[dqlist,ki_list,kf_list] = DiffractionPatterns.calc_dqshift_for_given_th(delta_thscanvals,ki_o,kf_o,qbragg_o);
 
 %%
 %scale all results by kmag:

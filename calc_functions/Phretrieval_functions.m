@@ -46,7 +46,7 @@ classdef Phretrieval_functions
             
         end
         
-        function [scale_fact,errtot] = ini_guess_scalefactor(probe_BCDI, rho_ini, data,scale_fact_guess)
+        function [scale_fact,errtot] = ini_guess_scalefactor(probe_BCDI, rho_ini, data,scale_fact_guess,ki,kf,X,Y,Z)
             % This function estimates the scaling factor by which the initial guess
             % has to be calculated in order to establish good initial conditions
             % for phase retrieval.
@@ -58,7 +58,7 @@ classdef Phretrieval_functions
                 rho_ini_scale = rho_ini.*scale_fact_guess(jj);
                 
                 
-                [errtot(jj)] = calc_error_multiangle_Irene(probe_BCDI, rho_ini_scale, data);
+                [errtot(jj)] = DiffractionPaterns.calc_error_multiangle(probe_BCDI, rho_ini_scale, data,ki,kf,X,Y,Z);
                 
             end
             
@@ -125,7 +125,7 @@ classdef Phretrieval_functions
                 
                 
                 % estimate the value of the error at rho + alpha_ini*gradtot_rho
-                err_plusalpha(counter) =  DiffractionPaterns.calc_error_multiangle(probe, rho_alpha, data,ki,kf,X,Y,Z);;
+                err_plusalpha(counter) =  DiffractionPaterns.calc_error_multiangle(probe, rho_alpha, data,ki,kf,X,Y,Z);
                 
                 
                 %recalculate the difference between error metric at alpha_iter and
@@ -152,7 +152,7 @@ classdef Phretrieval_functions
             
         end       
         
-        function [rho_new] = rho_update(probe, rho, data_exp,depth)
+        function [rho_new,beta_rho] = rho_update(probe, rho, data_exp,depth,err_0,ki,kf,X,Y,Z)
             % this functions updates rho
             
             % gradient calculation
@@ -165,24 +165,19 @@ classdef Phretrieval_functions
             direction_rho = - (D/depth)*gPIEiter;
             
             % calculate the adaptative step length
-            [beta_rho] = Phretrieval_functions.calc_beta_adaptative_rhostep(probe, rho, data_exp,gPIEiter,errlist(end),direction_rho,'rho',ki,kf,X,Y,Z);
+            [beta_rho] = Phretrieval_functions.calc_beta_adaptative_step(probe, rho, data_exp,gPIEiter,err_0,direction_rho,'rho',ki,kf,X,Y,Z);
             
             % update the object:
-            rho = rho + beta_rho * direction_rho;
-            
-            % multiply by the support:
-            rho_new = rho .*support;
-            
-            
-            
+            rho_new = rho + beta_rho * direction_rho;
+                                 
         end
         
-        function [dth_new,dq_shift,grad_final_theta,beta] = theta_correction(probe, rho,data_exp,Niter_theta,index_to_distort,dthBragg,error_0)
+        function [dth_new,dq_shift,grad_final_theta,beta] = theta_correction(probe, rho,data_exp,Niter_theta,dthBragg,error_0)
             %%% this function calculates the gradient of the error metric with
             %%% respect to the position of the angles analytically, and
             %%% the correction theta  step
             
-            global ki_o kf_o
+            global ki_o kf_o X Y Z
             
             qbragg = kf_o - ki_o;
                      
@@ -203,7 +198,7 @@ classdef Phretrieval_functions
                 
                 for ii = orderrandom%index_to_distort(orderrandom)%index_to_distort%1:numel(data_exp)%
 
-                    [grad_final_theta(ii,ntheta)] = GeneralGradient.calc_grad_theta(probe, rho, data_exp(ii), dth_new(ii),0,dthBragg);
+                    [grad_final_theta(ii,ntheta)] = GeneralGradient.calc_grad_theta(probe, rho, data_exp(ii), dth_new(ii),0,dthBragg,X,Y,Z,ki_o,kf_o);
                     
                     display(['dth_new = ' num2str(dth_new(ii)) 'gradient = ' num2str(grad_final_theta(ii,ntheta))]);
                     

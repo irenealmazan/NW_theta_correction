@@ -1,4 +1,4 @@
-classdef DiffractionPaterns
+classdef DiffractionPatterns
     % This library contains all the functions which allow us to rotate the
     % detector and the sample
     properties(Constant)

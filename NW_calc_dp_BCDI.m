@@ -30,7 +30,7 @@ for ii = 1:numel(delta_thscanvals)
      % store angles, dqshifts and diffraction patterns in structure
     data_exp(ii).dth_real = delta_thscanvals(ii)+dth_disp(ii);
     data_exp(ii).dth_nominal = delta_thscanvals(ii);
-    data_exp(ii).dth_iter = delta_thscanvals(ii)-th;
+    data_exp(ii).dth_iter = delta_thscanvals(ii);
     data_exp(ii).dth_disp = delta_thscanvals(ii);
     data_exp(ii).dshift_nominal = dq_shift_nominal;
     data_exp(ii).dqshift_real = dq_shift_real(ii,:);

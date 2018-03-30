@@ -46,7 +46,7 @@ classdef GeneralGradient
             %h2 = figure;
             %display_calc_dqshift_deriv(qbragg,dth_nominal,dq_shift_deriv,dq_shift,thBragg,h2)
       
-            [Psij_mod,~,~,FT_Psij,Qterm] = DiffractionPaterns.calc_single_dp(dq_shift,probe,rho,X,Y,Z);
+            [Psij_mod,~,~,FT_Psij,Qterm] = DiffractionPatterns.calc_single_dp(dq_shift,probe,rho,X,Y,Z);
                       
             %%% derivative of Qterm with respect to dq_shift
             deriv_Qterm_theta = (dq_shift_deriv(1).*X + dq_shift_deriv(3).*Z).*Qterm;                     

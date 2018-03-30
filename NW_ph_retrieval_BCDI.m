@@ -10,7 +10,7 @@ freq_rho = 10;
 freq_store = 10;
 
 
-display(['set # rho iterations to ' num2str(Niter_rho) ' temp, position iterations to ' num2str(Niter_pos) ' and cyles ' num2str(Ncycles)])
+display(['set # rho iterations to ' num2str(Niter_rho) ' temp, position frequency to ' num2str(Niter_pos) 'per rho iteration'])
 
 midsl = round(depth/2); % index of the section of the object represented in fig. 5
 printind = round( [10:10:100]*(numel(data_exp)/100));
@@ -26,12 +26,12 @@ if flagContinue == 0
     
     % initial guess and initial error:
     rho_ini = rand(Npix,Npix,depth).* exp(i*2*pi*rand(Npix,Npix,depth));
-    [scale_fact,err_scale_fact] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,[1]);
+    [scale_fact,err_scale_fact] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,[1],ki_o,kf_o,X,Y,Z);
     scale_fact = 1;%1.5e-4; % scale factor for random ini
     rho = rho_ini.*scale_fact .* support;
     
     fprintf('initial  error: %4.4d \n',err_scale_fact);
-    errlist = [errlist err_scale_fact];
+    errlist = [err_scale_fact];
 end
  
 figure(5); clf; setfigsize(gcf, 1000,500); pause(.1);
@@ -48,9 +48,13 @@ for nrho = 1:Niter_rho
 
     if(1)
 
-        [rho] = Phretrieval_functions.rho_update(probe, rho, data_exp,depth);
+        [rho,beta_rho] = Phretrieval_functions.rho_update(probe, rho, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
 
-        [err] = DiffractionPaterns.calc_error_multiangle(probe, rho, data_exp);
+        % multiply by the support:
+        rho = rho .*support;
+            
+        
+        [err] = DiffractionPaterns.calc_error_multiangle(probe, rho, data_exp,ki_o,kf_o,X,Y,Z);
         fprintf('\n     error: %4.4d \n', err);
         errlist = [errlist err];
 
@@ -71,7 +75,7 @@ for nrho = 1:Niter_rho
     tic;
     if mod(nrho,freq_pos) == 0
 
-        [dth_new,dq_shift,grad_final_theta,beta_theta] = Phretrieval_functions.theta_correction(probe, rho,data_exp,Niter_theta,index_to_distort,del/2,errlist(end));
+        [dth_new,dq_shift,grad_final_theta,beta_theta] = Phretrieval_functions.theta_correction(probe, rho,data_exp,Niter_theta,th,errlist(end));
 
         % store the shift
         for ii = 1:numel(data_exp)%index_to_distort%
