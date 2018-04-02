@@ -16,9 +16,9 @@ dth_disp(index_to_distort) = [0.0];%[0.008];%[0.017 -0.008 -0.013 0.005];%[0.017
 figure(27);clf;
 for ii = 1:numel(delta_thscanvals)
     
-    [dq_shift_nominal(ii,:)] = DiffractionPatterns.calc_dqshift_for_given_th(delta_thscanvals(ii),ki_o,kf_o,qbragg);
+    [dq_shift_nominal(ii,:)] = DiffractionPatterns.calc_dqshift_for_given_th(delta_thscanvals(ii),ki_o,kf_o,kf_o-ki_o);
      
-    [dq_shift_real(ii,:)] = DiffractionPatterns.calc_dqshift_for_given_th(delta_thscanvals(ii) + dth_disp(ii),ki_o,kf_o,qbragg);
+    [dq_shift_real(ii,:)] = DiffractionPatterns.calc_dqshift_for_given_th(delta_thscanvals(ii) + dth_disp(ii),ki_o,kf_o,kf_o-ki_o);
     
     [ simI,rock_curve(ii),Proj_vol,FT_Proj_vol] = DiffractionPatterns.calc_single_dp(dq_shift_real(ii,:),probe,NW,X,Y,Z);
   

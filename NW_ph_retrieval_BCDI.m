@@ -5,7 +5,7 @@
 Niter_rho = 2000;
 Niter_pos = 1;
 Niter_theta = 1;
-freq_pos = 1;
+freq_pos = 100;
 freq_rho = 10;
 freq_store = 10;
 
@@ -27,15 +27,15 @@ if flagContinue == 0
     % initial guess and initial error:
     %rho_ini = rand(Npix,Npix,depth).* exp(i*2*pi*rand(Npix,Npix,depth));
     rho_ini = NW;
-    [scale_fact,err_scale_fact,angles_list] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,[1],ki_o,kf_o,X,Y,Z);
-    scale_fact = 1;%1.5e-4; % scale factor for random ini
+    [scale_fact,err_scale_fact,angles_list] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,[150 200]*mncntrate/mn,ki_o,kf_o,X,Y,Z);
     rho = rho_ini.*scale_fact .* support;
     
     fprintf('initial  error: %4.4d \n',err_scale_fact);
-    errlist = [err_scale_fact];
+    errlist = [min(err_scale_fact)];
+
 end
  
-figure(5); clf; setfigsize(gcf, 1000,500); pause(.1);
+show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,1)
 
 %% Iterative engine:
 
@@ -59,11 +59,8 @@ for nrho = 1:Niter_rho
         fprintf('\n     error: %4.4d \n', err);
         errlist = [errlist err];
 
-        % plot
-        subplot(131); imagecomp(rho(:,:,midsl)); colorbar; axis image; %zoom(1.5);
-        subplot(132); imagecomp(squeeze(rho(100,:,:))); colorbar; axis image; %zoom(1.5);
-        subplot(133); plot(log10(errlist),'LineWidth',3.0);
-        drawnow;
+        show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,0)
+
 
         % store the current reconstruction:
         rho_store(nrho).rho_square = rho(:,:,midsl);
@@ -93,7 +90,8 @@ for nrho = 1:Niter_rho
         errlist = [errlist err];
 
         % plot
-        figure(5);subplot(132); plot(log10(errlist));drawnow;
+        show_rho_theta_update(5,errlist,rho,midsl,angle_list,delta_thscanvals'+dth_disp,0)
+
 
         cnt_ntheta = cnt_ntheta + 1;
     end

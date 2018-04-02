@@ -21,13 +21,5 @@ gam = 0; %out of plane
 thscanvals =  [72.8:1.0/64:73.8-1.0/64];;
 delta_thscanvals = thscanvals-th;
     
-
- 
-  
-   
-    
-
-    
-
-    mncntrate = 0.1;
-    %usesimI = 1;
+mncntrate = 1;
+%usesimI = 1;

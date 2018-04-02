@@ -69,7 +69,7 @@ classdef DiffractionPatterns
                 
                 [Psij_mod] = DiffractionPatterns.calc_single_dp( dq_shift(ii,:),probe,rho,X,Y,Z);
                                 
-                err = sqrt(data(ii).I) - sqrt(Psij_mod);
+               err = sqrt(data(ii).I) - sqrt(Psij_mod);
                 err = sum(err(:).^2)/numel(err);
                 errtot = errtot + err;
             end
