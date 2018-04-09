@@ -16,7 +16,7 @@ classdef GeneralGradient
             for ii=1:numel(data)
                 
                 
-                [~,~,Psij,~,Qterm] = DiffractionPatterns.calc_single_dp(data(ii).dqshift,probe,rho,X,Y,Z);
+                [~,~,~,Psij,Qterm] = DiffractionPatterns.calc_single_dp(data(ii).dqshift,probe,rho,X,Y,Z);
                 
                 Psig = flipud(sqrt(data(ii).I)).*exp(i*angle(Psij));%
                 grad = Psij - Psig; %%%% NEW % Psij - Psig;

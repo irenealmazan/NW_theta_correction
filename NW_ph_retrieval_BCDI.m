@@ -27,7 +27,7 @@ if flagContinue == 0
     % initial guess and initial error:
     %rho_ini = rand(Npix,Npix,depth).* exp(i*2*pi*rand(Npix,Npix,depth));
     rho_ini = NW;
-    [scale_fact,err_scale_fact,angles_list] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,[150 200]*mncntrate/mn,ki_o,kf_o,X,Y,Z);
+    [scale_fact,err_scale_fact,angles_list] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,1,ki_o,kf_o,X,Y,Z);
     rho = rho_ini.*scale_fact .* support;
     
     fprintf('initial  error: %4.4d \n',err_scale_fact);
