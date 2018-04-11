@@ -55,7 +55,7 @@ for nrho = 1:Niter_rho
 
     if(1)
 
-        [rho_new,beta_rho] = Phretrieval_functions.rho_update(probe, rho,angles_list,support, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
+        [rho,beta_rho] = Phretrieval_functions.rho_update(probe, rho,angles_list,support, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
         
         [err] = DiffractionPatterns.calc_error_multiangle(probe, rho, data_exp,angles_list,ki_o,kf_o,X,Y,Z);
         fprintf('\n     error: %4.4d \n', err);
