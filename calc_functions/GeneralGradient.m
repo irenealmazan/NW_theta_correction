@@ -168,7 +168,8 @@ classdef GeneralGradient
             
             alpha_track(counter) = alpha_iter;
             
-            while( Delta_err(counter) >= err_linear_aprox(counter))
+            %while( Delta_err(counter) >= err_linear_aprox(counter))
+            while( Delta_err(counter) >= alpha_iter*slope_alpha_0)
                 
                 % update the counter
                 counter = counter + 1;

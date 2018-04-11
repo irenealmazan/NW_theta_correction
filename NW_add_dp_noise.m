@@ -8,7 +8,7 @@ if (noiseflag)
     for ii=1:numel(data_exp)
         
         if(mod(ii,50)==0) display(['adding noise to sim dp ' num2str(ii) ' of ' num2str(numel(data_exp))]); end
-        data_exp(ii).simI = poisrnd( data_exp(ii).simI /mn * mncntrate);
+        data_exp(ii).noiseI = poisrnd( data_exp(ii).simI /mn * mncntrate);
         %data_exp(ii).simI = poisrnd( data_exp(ii).simI);
         %data_exp(ii).simI = data_exp(ii).simI;
     end
@@ -24,9 +24,9 @@ rock_curve_noise = zeros(numel(data_exp),1);
 if(usesimI)
     display(['overwriting experimental I with sim I']);
     for ii=1:numel(data_exp)
-        data_exp(ii).I = data_exp(ii).simI;
+        data_exp(ii).I = data_exp(ii).noiseI;
         
-        rock_curve_noise(ii) = sum(sum(data_exp(ii).simI));
+        rock_curve_noise(ii) = sum(sum(data_exp(ii).noiseI));
     end
 end
 

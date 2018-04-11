@@ -3,6 +3,12 @@
 ## We have git for backups!
 ##---------------------------------------------------
 
+#Matlab data files
+*.mat
+
+# Text files
+*.txt
+
 # Windows default autosave extension
 *.asv
 

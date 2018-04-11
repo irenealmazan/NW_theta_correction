@@ -9,7 +9,7 @@ addpath(genpath('./calc_functions'));
 addpath(genpath('./display_functions'));
 
 %% Flags:
-noiseflag = 0; 
+noiseflag = 1; 
 if(noiseflag) display('ADDING NOISE');end
 addNWstrain = 0; 
 if(addNWstrain) display('ADDING STRAIN FIELD');end
