@@ -24,10 +24,16 @@ if flagContinue == 0
     cnt_ntheta = 1;
     cnt_store = 1;
     
+    % initial list of angles:
+    angles_list = zeros(numel(data_exp),1);
+    for ii = 1:numel(data_exp)
+        angles_list(ii) = data_exp(ii).dth_iter;
+    end
+    
     % initial guess and initial error:
     %rho_ini = rand(Npix,Npix,depth).* exp(i*2*pi*rand(Npix,Npix,depth));
     rho_ini = NW;
-    [scale_fact,err_scale_fact,angles_list] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini, data_exp,[350]*mncntrate/mn,ki_o,kf_o,X,Y,Z);
+    [scale_fact,err_scale_fact] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini,angles_list,data_exp,[350]*mncntrate/mn,ki_o,kf_o,X,Y,Z);
     rho = rho_ini.*scale_fact .* support;
     
     fprintf('initial  error: %4.4d \n',err_scale_fact);
@@ -49,11 +55,7 @@ for nrho = 1:Niter_rho
 
     if(1)
 
-        [rho_new,beta_rho] = Phretrieval_functions.rho_update(probe, rho, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
-
-        % multiply by the support:
-        rho = rho_new .*support;
-            
+        [rho_new,beta_rho] = Phretrieval_functions.rho_update(probe, rho,angles_list,support, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
         
         [err] = DiffractionPatterns.calc_error_multiangle(probe, rho, data_exp,angles_list,ki_o,kf_o,X,Y,Z);
         fprintf('\n     error: %4.4d \n', err);

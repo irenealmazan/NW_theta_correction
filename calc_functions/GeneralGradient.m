@@ -9,16 +9,18 @@ classdef GeneralGradient
         
         
         
-        function [gradtot] = calc_grad_multiangle(probe, rho, data,X,Y,Z)
+        function [gradtot] = calc_grad_multiangle(probe, rho,angles_list, data,ki_ini,kf_ini,X,Y,Z)
             
             gradtot = zeros(size(rho));
+            
+            [dqshift] = DiffractionPatterns.calc_dqshift_for_given_th(angles_list,ki_ini,kf_ini,kf_ini-ki_ini);
             
             for ii=1:numel(data)
                 
                 
-                [~,~,~,Psij,Qterm] = DiffractionPatterns.calc_single_dp(data(ii).dqshift,probe,rho,X,Y,Z);
+                [~,~,~,Psij,Qterm] = DiffractionPatterns.calc_single_dp(dqshift(ii,:),probe,rho,X,Y,Z);
                 
-                Psig = flipud(sqrt(data(ii).I)).*exp(i*angle(Psij));%
+                Psig = flipud(sqrt(data(ii).I)).*exp(1i*angle(Psij));%
                 grad = Psij - Psig; %%%% NEW % Psij - Psig;
                 grad = fftshift(ifftn(fftshift(grad)));
                 grad = repmat(grad, [1 1 size(probe,3)]);
@@ -118,7 +120,7 @@ classdef GeneralGradient
             
         end
         
-        function [alpha_iter,err_plusalpha,alpha_track] = calc_beta_adaptative_step(probe, rho, data,gradtot,err_0,direction,flag,ki,kf,X,Y,Z)
+        function [beta_iter,err_plusalpha,beta_track] = calc_beta_adaptative_step(probe, rho,angles_list,data,gradtot,err_0,direction,flag,ki,kf,X,Y,Z)
             % this function calculates the adaptative step length for the
             % correction of the rho. We folllow Nocedal "Backtracking Line Search
             % The imputs are the following:
@@ -137,26 +139,24 @@ classdef GeneralGradient
             c1 = 1e-3; % see Nocedal
             counter = 1; % counter to track the evolution of the error, alpha and the approximation of the error with the iterations
             counter_max = 5;
-            tau_backtrack = 0.01;
+            tau_backtrack = 0.1;
             err_linear_aprox(counter) = - err_0;
             
             slope_alpha_0 = c1*real(direction(:)'*gradtot(:));
-            alpha_ini = 1;%-err_0/(slope_alpha_0);
+            beta_ini = 1;%-err_0/(slope_alpha_0);
             
             % rho/theta at initial alapha
             theta_alpha = zeros(numel(data),1);
+            
             switch flag
                 
                 case 'rho'
-                    rho_alpha = rho + alpha_ini * direction;
-                    for ii=1:numel(data)
-                        theta_alpha(ii) = data(ii).dth_iter;
-                    end
+                    rho_alpha = rho + beta_ini * direction;
+                    theta_alpha = angles_list;
+                    
                 case 'theta'
                     rho_alpha = rho;
-                    for ii=1:numel(data)
-                        theta_alpha(ii) = data(ii).dth_iter +alpha_ini * gradtot(ii);
-                    end
+                    theta_alpha = angles_list +beta_ini * gradtot;
             end
             
             % estimate the value of the error at rho + alpha_ini*gradtot_rho
@@ -164,28 +164,27 @@ classdef GeneralGradient
             
             Delta_err(counter) = err_plusalpha(counter) - err_0;
             
-            alpha_iter = alpha_ini;
+            beta_iter = beta_ini;
             
-            alpha_track(counter) = alpha_iter;
+            beta_track(counter) = beta_iter;
             
-            %while( Delta_err(counter) >= err_linear_aprox(counter))
-            while( Delta_err(counter) >= alpha_iter*slope_alpha_0)
+            while( Delta_err(counter) >= beta_iter*slope_alpha_0)
                 
                 % update the counter
                 counter = counter + 1;
                 
                 % update alpha
-                alpha_iter = alpha_iter*tau_backtrack;
+                beta_iter = beta_iter*tau_backtrack;
                 
                 % move rho
                 switch flag
                     
                     case 'rho'
-                        rho_alpha = rho + alpha_iter * direction;
+                        rho_alpha = rho + beta_iter * direction;
                         
                     case 'theta'
                         for ii=1:numel(data)
-                            theta_alpha(ii) = data(ii).dth_iter +alpha_iter*gradtot(ii);
+                            theta_alpha(ii) = data(ii).dth_iter +beta_iter*gradtot(ii);
                         end
                 end
                 
@@ -199,11 +198,11 @@ classdef GeneralGradient
                 Delta_err(counter) = err_plusalpha(counter) - err_0;
                 
                 % calculate the linear approximation of the error metric
-                err_linear_aprox(counter) =  alpha_iter*slope_alpha_0;
+                err_linear_aprox(counter) =  beta_iter*slope_alpha_0;
                 
-                display(['err(' num2str(alpha_iter) ' ) - err(0) = ' num2str(Delta_err(counter)) ' and linear approx. ' num2str(err_linear_aprox(counter))])
+                display(['err(' num2str(beta_iter) ' ) - err(0) = ' num2str(Delta_err(counter)) ' and linear approx. ' num2str(err_linear_aprox(counter))])
                 
-                alpha_track(counter) = alpha_iter;
+                beta_track(counter) = beta_iter;
                 
                 if counter > counter_max
                     display('beta not found');

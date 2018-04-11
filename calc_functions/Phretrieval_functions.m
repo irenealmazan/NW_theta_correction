@@ -46,40 +46,36 @@ classdef Phretrieval_functions
             
         end
         
-        function [scale_fact,errtot,angles_list] = ini_guess_scalefactor(probe_BCDI, rho_ini, data,scale_fact_guess,ki,kf,X,Y,Z)
+        function [scale_fact,errtot] = ini_guess_scalefactor(probe_BCDI, rho_ini,angle_list_ini, data,scale_fact_guess,ki,kf,X,Y,Z)
             % This function estimates the scaling factor by which the initial guess
             % has to be calculated in order to establish good initial conditions
             % for phase retrieval.
             
             errtot = zeros(numel(scale_fact_guess),1);
-            angles_list = zeros(numel(data),1);
-            for ii = 1:numel(data)
-                angles_list(ii) = data(ii).dth_iter;
-            end
-            
+                      
             for jj=1:numel(scale_fact_guess)
                 rho_ini_scale = rho_ini.*scale_fact_guess(jj);                
-                [errtot(jj)] = DiffractionPatterns.calc_error_multiangle(probe_BCDI, rho_ini_scale, data,angles_list,ki,kf,X,Y,Z);                
+                [errtot(jj)] = DiffractionPatterns.calc_error_multiangle(probe_BCDI, rho_ini_scale, data,angle_list_ini,ki,kf,X,Y,Z);                
             end
             
             scale_fact = scale_fact_guess(find(min(errtot)==errtot));
             
         end
                 
-        function [rho_new,beta_rho] = rho_update(probe, rho, data_exp,depth,err_0,ki,kf,X,Y,Z)
+        function [rho_new,beta_rho] = rho_update(probe, rho,angles_list,support, data_exp,depth,err_0,ki,kf,X,Y,Z)
             % this functions updates rho
             
             % gradient calculation
-            [gPIEiter] = GeneralGradient.calc_grad_multiangle(probe, rho, data_exp,X,Y,Z);
+            [gPIEiter] = GeneralGradient.calc_grad_multiangle(probe, rho,angles_list,data_exp,ki,kf,X,Y,Z);
             
             % direction of the scaled steepest descent:
             D = 1/(max(max(max(abs(probe).^2))));
             
             %       direction_rho = -conj(gPIEiter);
-            direction_rho = - (D/depth)*gPIEiter;
+            direction_rho = - (D/depth)*(gPIEiter.*support);
             
             % calculate the adaptative step length
-            [beta_rho] = GeneralGradient.calc_beta_adaptative_step(probe, rho, data_exp,gPIEiter,err_0,direction_rho,'rho',ki,kf,X,Y,Z);
+            [beta_rho] = GeneralGradient.calc_beta_adaptative_step(probe, rho,angles_list,data_exp,gPIEiter,err_0,direction_rho,'rho',ki,kf,X,Y,Z);
             
             % update the object:
             rho_new = rho + beta_rho * direction_rho;

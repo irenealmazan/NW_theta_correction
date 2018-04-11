@@ -20,7 +20,7 @@ if(plotdqshift) display('PLOTTING DQ ROCKING CURVE'); end
 usesimI = 1; 
 if(usesimI) display('USING SIMULATED DATA');end
 flagContinue = 0;
-if flagContinue == 0
+if flagContinue == 1
     display('STARTING A NEW PHASE RETRIEVAL OPERATION');
 
     %% initialize parameters relative to experimental setup and sample
