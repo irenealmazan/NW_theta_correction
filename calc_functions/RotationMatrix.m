@@ -6,13 +6,27 @@ classdef RotationMatrix
     
     
     methods(Static)
+       
+         function [Ry_rock,Ry_rock_deriv] = rock_curve(dth)
+            
+            % This function calculates the rotation matrix which turns the qbragg peak in order to scan the
+            % rocking curve and its derivative with respect to dth. Needs to be adapted for each experimental
+            % set-up
+            
+            Ry_rock = [cosd(dth) 0 sind(dth);
+                0 1 0;
+                -sind(dth) 0 cosd(dth)];
+            
+            Ry_rock_deriv = [sind(dth) 0 -cosd(dth);
+                0 0 0;
+                cosd(dth) 0 sind(dth)];
+        end
         
         function [Ry,Rx] = detector(del,gam)
             
             % This function writes the rotational matrix which describe the position
             % of the detector with respect to the outgoing beam. The reference frame is
             % sector 26 of APS
-            
             
             Ry = [cosd(del) 0 sind(del);
                 0 1 0;

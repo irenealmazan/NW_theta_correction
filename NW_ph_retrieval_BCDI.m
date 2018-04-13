@@ -5,9 +5,9 @@
 Niter_rho = 2000;
 Niter_pos = 1;
 Niter_theta = 1;
-freq_pos = 100;
-freq_rho = 10;
-freq_store = 10;
+freq_pos = 1;
+%freq_rho = 10;
+%freq_store = 10;
 
 
 display(['set # rho iterations to ' num2str(Niter_rho) ' temp, position frequency to ' num2str(Niter_pos) 'per rho iteration'])
@@ -41,7 +41,7 @@ if flagContinue == 0
 
 end
  
-show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,1)
+DisplayResults.show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,1)
 
 %% Iterative engine:
 
@@ -53,7 +53,7 @@ for nrho = 1:Niter_rho
 
     %RHO ITERATIONS
 
-    if(1)
+    if(0)
 
         [rho,beta_rho] = Phretrieval_functions.rho_update(probe, rho,angles_list,support, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
         
@@ -61,7 +61,7 @@ for nrho = 1:Niter_rho
         fprintf('\n     error: %4.4d \n', err);
         errlist = [errlist err];
 
-        show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,0)
+        DisplayResults.show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,0)
 
 
         % store the current reconstruction:
@@ -75,7 +75,7 @@ for nrho = 1:Niter_rho
     tic;
     if mod(nrho,freq_pos) == 0
 
-        [angles_list,dq_shift,grad_final_theta,beta_theta] = Phretrieval_functions.theta_update(probe, rho,data_exp,Niter_theta,th,errlist(end));
+        [angles_list,dq_shift,grad_final_theta,beta_theta] = Phretrieval_functions.theta_update(probe, rho,angles_list,data_exp,Niter_theta,th,errlist(end),ki_o,kf_o,X,Y,Z);
 
         % store the updated theta list
         for ii = 1:numel(data_exp)%index_to_distort%
@@ -92,7 +92,7 @@ for nrho = 1:Niter_rho
         errlist = [errlist err];
 
         % plot
-        show_rho_theta_update(5,errlist,rho,midsl,angle_list,delta_thscanvals'+dth_disp,0)
+        DisplayResults.show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,0)
 
 
         cnt_ntheta = cnt_ntheta + 1;

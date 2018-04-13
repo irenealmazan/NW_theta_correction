@@ -47,7 +47,7 @@ classdef DisplayFunctions
                       
         end
         
-         function h = display_strain(strptsmid,phvals,fig_num)
+        function h = display_strain(strptsmid,phvals,fig_num)
             
              
              if ishandle(fig_num)
@@ -72,6 +72,60 @@ classdef DisplayFunctions
             h = scatter3(strptsmid(:,1), strptsmid(:,2), strptsmid(:,3), [], phvals(:));
 
                       
+        end
+        
+        function h2 = display_calc_dqshift_deriv(dth_nominal,dq_shift_deriv0,dq_shift0,ki,kf,h1)
+           
+            % h1 is the handle for the figure            
+            th_fine_grid  = dth_nominal+[-180:10:180];                                
+                                                                                        
+            [dq_shift] = DiffractionPatterns.calc_dqshift_for_given_th(th_fine_grid,ki,kf,kf-ki);
+         
+            h2 = figure(h1);
+            clf;
+            
+            subplot(1,2,1);
+            hold on;
+            plot(th_fine_grid,dq_shift(:,1),'b');
+            plot(dth_nominal,dq_shift0(1),'ob');
+            cstx = dq_shift0(1)-dq_shift_deriv0(1)*(dth_nominal);%dth_nominal + dth_delta-dq_shift_x_deriv*(dth_nominal + dth_delta);
+            plot( th_fine_grid,cstx +dq_shift_deriv0(1).*th_fine_grid,'r');
+            
+            title(['delta q_x at a nominal angle of ' num2str(dth_nominal)])
+            legend('dq\_{shift} calculated with the rotation matrix fine grid ','dq\_{shift} calculated with matrix at th_nominal','dqx\_{shift} analytical','derivative of dq\_{shift} calculated analytically')
+            
+            subplot(1,2,2);
+            hold on;
+            plot(th_fine_grid,dq_shift(:,3),'b');
+            plot(dth_nominal,dq_shift0(3),'ob');
+            cstz = dq_shift0(3)-dq_shift_deriv0(3)*(dth_nominal);%dth_nominal + dth_delta-dq_shift_x_deriv*(dth_nominal + dth_delta);
+            plot( th_fine_grid, cstz +dq_shift_deriv0(3).*th_fine_grid,'r');
+            title(['delta q_z' ]);
+           % legend('dq\_{shift} calculated with the rotation matrix ','dq\_{shift} calculated analytically ','derivative of dq\_{shift} calculated analytically')
+           
+            
+        end
+ 
+        function display_calc_grad_theta(probe, rho, data, dth_nominal,grad_calc,err_0 ,X,Y,Z,ki_o,kf_o,fig_num)        
+            
+            th_fine_grid = dth_nominal+[-0.05:0.5e-3 :0.05];%[-0.005:1e-5 :0.005];
+            
+            err_thin_grid = zeros(numel(th_fine_grid) ,1);
+            
+            for jj = 1:numel(th_fine_grid)            
+                err_thin_grid(jj) =  DiffractionPatterns.calc_error_multiangle(probe, rho, data,th_fine_grid(jj),ki_o,kf_o,X,Y,Z);                
+            end
+            
+            figure(fig_num);
+            plot(th_fine_grid,err_thin_grid);
+            hold on;
+            plot(dth_nominal,err_0,'ob');
+            cstx = err_0-grad_calc*(dth_nominal);%dth_nominal + dth_delta-dq_shift_x_deriv*(dth_nominal + dth_delta);
+            plot(th_fine_grid,cstx + grad_calc* th_fine_grid);
+            title(['theta = ' num2str(dth_nominal)]);
+            
+            
+            
         end
         
     end

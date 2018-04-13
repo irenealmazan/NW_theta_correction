@@ -82,55 +82,43 @@ classdef Phretrieval_functions
                                  
         end
         
-        function [dth_new,dq_shift,grad_final_theta,beta] = theta_update(probe, rho,data_exp,Niter_theta,dthBragg,error_0)
+        function [dth_new,dq_shift,grad_final_theta,beta] = theta_update(probe, rho,angles_list,data_exp,Niter_theta,dthBragg,error_0,ki,kf,X,Y,Z)
             %%% this function calculates the gradient of the error metric with
             %%% respect to the position of the angles analytically, and
             %%% the correction theta  step
-            
-            global ki_o kf_o X Y Z
-            
-            qbragg = kf_o - ki_o;
+                        
+            qbragg = kf - ki;
                      
             % initialize varibles:
-            
-            dth_new = zeros(numel(data_exp),1);
-            for ii=1:numel(data_exp)
-                dth_new(ii) = data_exp(ii).dth_iter;
-            end
+            dth_new = angles_list;
             
             dq_shift = zeros(numel(data_exp),3);
             
-            grad_final_theta = zeros(numel(data_exp),Niter_theta);
+            grad_final_theta = zeros(Niter_theta,numel(data_exp));
             
             for ntheta = 1:Niter_theta
                                 
-                orderrandom = randperm(numel(data_exp));%randperm(numel(index_to_distort));
+                [grad_final_theta(ntheta,:)] = GeneralGradient.calc_grad_theta(probe, rho, data_exp, dth_new,ki,kf,X,Y,Z);
                 
-                for ii = orderrandom%index_to_distort(orderrandom)%index_to_distort%1:numel(data_exp)%
-
-                    [grad_final_theta(ii,ntheta)] = GeneralGradient.calc_grad_theta(probe, rho, data_exp(ii), dth_new(ii),0,dthBragg,X,Y,Z,ki_o,kf_o);
-                    
-                    display(['dth_new = ' num2str(dth_new(ii)) 'gradient = ' num2str(grad_final_theta(ii,ntheta))]);
-                    
+                for ii = 1:numel(data_exp)%
+                    display(['dth_new = ' num2str(dth_new(ii)) 'gradient = ' num2str(grad_final_theta(ntheta,ii))]);
                 end
                 
                 % define the direction of the descent:
-                direction = -grad_final_theta;
+                direction = -squeeze(grad_final_theta(ntheta,:)');
                 
                 % calculate an adaptative step size:
-                [beta] = GeneralGradient.calc_beta_adaptative_step(probe, rho, data_exp,grad_final_theta,error_0,direction,'theta',ki_o,kf_o,X,Y,Z);
-                
+                [beta] = GeneralGradient.calc_beta_adaptative_step(probe, rho, dth_new,data_exp,grad_final_theta,error_0,direction,'theta',ki,kf,X,Y,Z);
+
                 % corrected theta :
                 dth_new = dth_new + beta* direction;
                 
-                % corrected dqshift:               
-                [dq_shift] = DiffractionPatterns.calc_dqshift_for_given_th(dth_new,ki_o,kf_o,qbragg);                                 
+                % corrected dqshift:
+                [dq_shift] = DiffractionPatterns.calc_dqshift_for_given_th(dth_new,ki,kf,qbragg);
                 
                 
             end
-            
-            
-            
+                                    
             
             %%% TEST OF  GRADIENT
             %{
