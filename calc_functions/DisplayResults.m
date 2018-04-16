@@ -82,23 +82,29 @@ classdef DisplayResults
             
         end
         
-        function [] = show_rho_theta_update(figure_num,errlist,rho,midsl,anglelist,trueangles,flagINI)
+        function [] = show_rho_theta_update(figure_num,errlist,rho,midsl,anglelist,trueangles,norm_grad_rho,norm_grad_theta,flag)
             % this function creates the figure where we plot the improvements of the
             % rho and the angles during the phase retrieval iterations. flagINI
             % indicates if the figure needs to be created (initial state) or only
             % updated
             
             figure(figure_num);
-            if flagINI == 1
+            if strcmp(flag,'Ini')
                 clf;
                 setfigsize(gcf, 1000,500);
             end
             % plot
-            subplot(141); imagecomp(rho(:,:,midsl)); colorbar; axis image; %zoom(1.5);
-            subplot(142); imagecomp(squeeze(rho(100,:,:))); colorbar; axis image; %zoom(1.5);
-            subplot(143); plot(log10(errlist),'LineWidth',3.0);
-            subplot(144); plot(anglelist,'ob');
+            subplot(231); imagecomp(rho(:,:,midsl)); colorbar; axis image;title('Longitudinal section'); %zoom(1.5);
+            subplot(232); imagecomp(squeeze(rho(100,:,:))); colorbar; axis image;title('Transversal section') %zoom(1.5);
+            subplot(233); plot(log10(errlist),'LineWidth',3.0);title('Error metric')
+            subplot(234); plot(anglelist,'ob');title('Angles')
             hold on; plot(trueangles,'*r');
+            
+            if strcmp(flag,'rho')
+                subplot(235); plot(norm_grad_rho,'ob');title('norm of grad\_rho');
+            elseif strcmp(flag,'theta')    
+                subplot(236); plot(norm_grad_theta,'ob');title('norm of grad\d_theta');
+            end
             
             drawnow;
             

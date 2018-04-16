@@ -45,9 +45,9 @@ classdef GeneralGradient
             [dq_shift_deriv_manual] = DiffractionPatterns.calc_dq_deriv_manually(dth_nominal,ki,kf,qbragg);
              
             % display the derivative of dq_shift
-            if 0
+            if 1
                 for jj = [1:round(numel(dth_nominal)/5):numel(dth_nominal)]
-                    h2(jj).h = DisplayFunctions.display_calc_dqshift_deriv(dth_nominal(jj),dq_shift_deriv_analytic(jj,:),dq_shift(jj,:),ki,kf,30+jj);
+                    %h2(jj).h = DisplayFunctions.display_calc_dqshift_deriv(dth_nominal(jj),dq_shift_deriv_analytic(jj,:),dq_shift(jj,:),ki,kf,30+jj);
                     h3(jj).h = DisplayFunctions.display_calc_dqshift_deriv(dth_nominal(jj),dq_shift_deriv_manual(jj,:),dq_shift(jj,:),ki,kf,31+jj);
                 end
             end
@@ -105,21 +105,24 @@ classdef GeneralGradient
             % calculate the value of alpha_ini that we choose as the value for
             % which the linear approximation of the error metric becomes positive
             c1 = 1e-3; % see Nocedal
-            counter = 1; % counter to track the evolution of the error, alpha and the approximation of the error with the iterations
-            counter_max = 5;
+            counter = 1; % counter to track the evolution of the error, alpha and the approximation of the error with the iterations            
             tau_backtrack = 0.1;
             err_linear_aprox(counter) = - err_0;
             
             slope_alpha_0 = c1*real(direction(:)'*gradtot(:));
-            beta_ini = 1;%-err_0/(slope_alpha_0);
+            
             
             % rho/theta at initial beta           
             switch flag
                 
                 case 'rho'
+                    counter_max = 5;
+                    beta_ini = 1;
                     rho_beta = rho + beta_ini * direction;
                     theta_beta = angles_list;                    
                 case 'theta'
+                    counter_max = 15;
+                    beta_ini = 1e-5;
                     rho_beta = rho;
                     theta_beta = angles_list + beta_ini * direction;
             end

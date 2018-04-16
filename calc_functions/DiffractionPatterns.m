@@ -17,7 +17,7 @@ classdef DiffractionPatterns
             
             for ii = 1:numel(dth)
                 
-                [Ry,Ry_deriv] = RotationMatrix.rock_curve(dth(ii));
+                [Ry,Ry_deriv] = RotationMatrix.rock_curve(dth(ii),0.0);
                 
                 ki(ii,:) = (Ry * ki_ini.').';
                 kf(ii,:) = (Ry * kf_ini.').';
@@ -35,8 +35,8 @@ classdef DiffractionPatterns
             dq_shift_deriv = zeros(numel(dth),3);
             
             for jj = 1:numel(dth)
-                [~,Ry_rock_deriv] = RotationMatrix.rock_curve(dth(jj));
-                dq_shift_deriv(jj,:) = (Ry_rock_deriv * kf' - Ry_rock_deriv * ki');
+                [Ry_rock,Ry_rock_deriv] = RotationMatrix.rock_curve(dth(jj),1e-4);
+                dq_shift_deriv(jj,:) = (Ry_rock_deriv * kf' - Ry_rock_deriv * ki')-qbragg';
                 %dq_shift_deriv(jj,:) = (Ry_rock_deriv * qbragg');
             end
             

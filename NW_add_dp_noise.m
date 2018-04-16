@@ -24,9 +24,13 @@ rock_curve_noise = zeros(numel(data_exp),1);
 if(usesimI)
     display(['overwriting experimental I with sim I']);
     for ii=1:numel(data_exp)
-        data_exp(ii).I = data_exp(ii).noiseI;
+        if (noiseflag)
+            data_exp(ii).I = data_exp(ii).noiseI;            
+        else
+            data_exp(ii).I = data_exp(ii).simI;            
+        end
+        rock_curve_noise(ii) = sum(sum(data_exp(ii).I));
         
-        rock_curve_noise(ii) = sum(sum(data_exp(ii).noiseI));
     end
 end
 

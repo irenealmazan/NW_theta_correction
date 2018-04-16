@@ -62,7 +62,7 @@ classdef Phretrieval_functions
             
         end
                 
-        function [rho_new,beta_rho] = rho_update(probe, rho,angles_list,support, data_exp,depth,err_0,ki,kf,X,Y,Z)
+        function [rho_new,beta_rho,norm_gradient] = rho_update(probe, rho,angles_list,support, data_exp,depth,err_0,ki,kf,X,Y,Z)
             % this functions updates rho
             
             % gradient calculation
@@ -79,10 +79,12 @@ classdef Phretrieval_functions
             
             % update the object:
             rho_new = rho + beta_rho * direction_rho;
-                                 
+            
+            % calculate the norm of the gradient:
+            norm_gradient = gPIEiter(:)*gPIEiter(:).';                     
         end
         
-        function [dth_new,dq_shift,grad_final_theta,beta] = theta_update(probe, rho,angles_list,data_exp,Niter_theta,dthBragg,error_0,ki,kf,X,Y,Z)
+        function [dth_new,dq_shift, grad_final_theta,norm_grad_theta,beta] = theta_update(probe, rho,angles_list,data_exp,Niter_theta,dthBragg,error_0,ki,kf,X,Y,Z)
             %%% this function calculates the gradient of the error metric with
             %%% respect to the position of the angles analytically, and
             %%% the correction theta  step
@@ -116,6 +118,8 @@ classdef Phretrieval_functions
                 % corrected dqshift:
                 [dq_shift] = DiffractionPatterns.calc_dqshift_for_given_th(dth_new,ki,kf,qbragg);
                 
+                % norm of the gradient:
+                norm_grad_theta = grad_final_theta(ntheta,:)*grad_final_theta(ntheta,:)';
                 
             end
                                     

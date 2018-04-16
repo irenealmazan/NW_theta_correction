@@ -10,8 +10,8 @@ mxI = zeros(size(delta_thscanvals));
 im_sum_sim = zeros(Npix);
 
 % distortion:
-index_to_distort = [34];%[1:numel(fly2Danglist)];%[28:1:45];%[28 31 35 36];%[36];%[28:1:33];%randi(numel(fly2Danglist),1,number_angles_distort);
-dth_disp(index_to_distort) = [0.0];%[0.008];%[0.017 -0.008 -0.013 0.005];%[0.017];% -0.008 -0.013 0.005];%[0.002];%[-.003:.001:.003];
+index_to_distort = [34:numel(delta_thscanvals)];%[1:numel(fly2Danglist)];%[28:1:45];%[28 31 35 36];%[36];%[28:1:33];%randi(numel(fly2Danglist),1,number_angles_distort);
+dth_disp(index_to_distort) = [0.002];%[0.008];%[0.017 -0.008 -0.013 0.005];%[0.017];% -0.008 -0.013 0.005];%[0.002];%[-.003:.001:.003];
 
  [dq_shift_nominal] = DiffractionPatterns.calc_dqshift_for_given_th(delta_thscanvals,ki_o,kf_o,kf_o-ki_o);
      

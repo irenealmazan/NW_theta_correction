@@ -33,15 +33,20 @@ if flagContinue == 0
     % initial guess and initial error:
     %rho_ini = rand(Npix,Npix,depth).* exp(i*2*pi*rand(Npix,Npix,depth));
     rho_ini = NW;
-    [scale_fact,err_scale_fact] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini,angles_list,data_exp,[350]*mncntrate/mn,ki_o,kf_o,X,Y,Z);
+    [scale_fact,err_scale_fact] = Phretrieval_functions.ini_guess_scalefactor(probe, rho_ini,angles_list,data_exp,1,ki_o,kf_o,X,Y,Z);
+    %scale_fact = 1;
     rho = rho_ini.*scale_fact .* support;
+    
+    % initial value of the gradient in rho and theta, assumed to be zero
+    norm_grad_rho = 0;
+    norm_grad_theta = 0;
     
     fprintf('initial  error: %4.4d \n',err_scale_fact);
     errlist = [min(err_scale_fact)];
 
 end
  
-DisplayResults.show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,1)
+DisplayResults.show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,norm_grad_rho,norm_grad_theta,'Ini');
 
 %% Iterative engine:
 
@@ -55,13 +60,13 @@ for nrho = 1:Niter_rho
 
     if(0)
 
-        [rho,beta_rho] = Phretrieval_functions.rho_update(probe, rho,angles_list,support, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
+        [rho,beta_rho,norm_grad_rho(nrho)] = Phretrieval_functions.rho_update(probe, rho,angles_list,support, data_exp,depth,errlist(end),ki_o,kf_o,X,Y,Z);
         
         [err] = DiffractionPatterns.calc_error_multiangle(probe, rho, data_exp,angles_list,ki_o,kf_o,X,Y,Z);
         fprintf('\n     error: %4.4d \n', err);
         errlist = [errlist err];
 
-        DisplayResults.show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,0)
+        DisplayResults.show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,norm_grad_rho,norm_grad_theta,'rho');
 
 
         % store the current reconstruction:
@@ -75,7 +80,7 @@ for nrho = 1:Niter_rho
     tic;
     if mod(nrho,freq_pos) == 0
 
-        [angles_list,dq_shift,grad_final_theta,beta_theta] = Phretrieval_functions.theta_update(probe, rho,angles_list,data_exp,Niter_theta,th,errlist(end),ki_o,kf_o,X,Y,Z);
+        [angles_list,dq_shift,grad_final_theta,norm_grad_theta(cnt_ntheta),beta_theta] = Phretrieval_functions.theta_update(probe, rho,angles_list,data_exp,Niter_theta,th,errlist(end),ki_o,kf_o,X,Y,Z);
 
         % store the updated theta list
         for ii = 1:numel(data_exp)%index_to_distort%
@@ -92,7 +97,7 @@ for nrho = 1:Niter_rho
         errlist = [errlist err];
 
         % plot
-        DisplayResults.show_rho_theta_update(5,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,0)
+        DisplayResults.show_rho_theta_update(6,errlist,rho,midsl,angles_list,delta_thscanvals'+dth_disp,norm_grad_rho,norm_grad_theta,'theta')
 
 
         cnt_ntheta = cnt_ntheta + 1;
