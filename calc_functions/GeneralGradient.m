@@ -88,7 +88,7 @@ classdef GeneralGradient
             %display_calc_grad2_theta(probe, rho, data, dth_nominal,grad2_final_theta,grad_final_theta)
         end
            
-        function [beta_iter,err_plusalpha,beta_track] = calc_beta_adaptative_step(probe, rho,angles_list,data,gradtot,err_0,direction,flag,ki,kf,X,Y,Z)
+        function [beta_iter,err_plusalpha,beta_track] = calc_beta_adaptative_step(probe, rho,angles_list,data,gradtot,err_0,direction,tau_backtrack,beta_ini,counter_max,flag,ki,kf,X,Y,Z)
             % this function calculates the adaptative step length for the
             % correction of the rho. We folllow Nocedal "Backtracking Line Search
             % The imputs are the following:
@@ -106,7 +106,6 @@ classdef GeneralGradient
             % which the linear approximation of the error metric becomes positive
             c1 = 1e-3; % see Nocedal
             counter = 1; % counter to track the evolution of the error, alpha and the approximation of the error with the iterations            
-            tau_backtrack = 0.1;
             err_linear_aprox(counter) = - err_0;
             
             slope_alpha_0 = c1*real(direction(:)'*gradtot(:));
@@ -116,13 +115,9 @@ classdef GeneralGradient
             switch flag
                 
                 case 'rho'
-                    counter_max = 5;
-                    beta_ini = 1;
                     rho_beta = rho + beta_ini * direction;
                     theta_beta = angles_list;                    
-                case 'theta'
-                    counter_max = 15;
-                    beta_ini = 1e-5;
+                case 'theta'                    
                     rho_beta = rho;
                     theta_beta = angles_list + beta_ini * direction;
             end

@@ -82,8 +82,8 @@ classdef DisplayResults
             
         end
         
-        function [] = show_rho_theta_update(figure_num,errlist,rho,midsl,anglelist,trueangles,norm_grad_rho,norm_grad_theta,flag)
-            % this function creates the figure where we plot the improvements of the
+        function [] = show_rho_theta_update(figure_num,errlist,rho,midsl,anglelist,trueangles,norm_grad_rho,beta_rho,norm_grad_theta,beta_theta,flag)
+                       % this function creates the figure where we plot the improvements of the
             % rho and the angles during the phase retrieval iterations. flagINI
             % indicates if the figure needs to be created (initial state) or only
             % updated
@@ -96,18 +96,54 @@ classdef DisplayResults
             % plot
             subplot(231); imagecomp(rho(:,:,midsl)); colorbar; axis image;title('Longitudinal section'); %zoom(1.5);
             subplot(232); imagecomp(squeeze(rho(100,:,:))); colorbar; axis image;title('Transversal section') %zoom(1.5);
-            subplot(233); plot(log10(errlist),'LineWidth',3.0);title('Error metric')
-            subplot(234); plot(anglelist,'ob');title('Angles')
+            subplot(233); plot(log10(errlist),'LineWidth',3.0);title('Error metric');xlabel('Iterations')
+            subplot(234); plot(anglelist,'ob');title('Angles');xlabel('angle index');
             hold on; plot(trueangles,'*r');
             
             if strcmp(flag,'rho')
-                subplot(235); plot(norm_grad_rho,'ob');title('norm of grad\_rho');
+                subplot(235); plot(norm_grad_rho,'ob');title('norm of grad\_rho and beta');
+                yyaxis right;
+                plot(beta_rho,'*k');
+                ax = gca;
+                set(ax.YAxis(1),'Color','b');
+                yyaxis left;
+                ylabel('norm of gradien');
+                yyaxis right;
+                ylabel('beta');
+                xlabel('iterations');
             elseif strcmp(flag,'theta')    
-                subplot(236); plot(norm_grad_theta,'ob');title('norm of grad\d_theta');
+                subplot(236); plot(norm_grad_theta,'ob');title('norm of grad\d_theta and beta');
+                yyaxis right;
+                plot(beta_theta,'*k');
+                set(ax.YAxis(1),'Color','b');
+                yyaxis left;
+                ylabel('norm of gradien');
+                yyaxis right;
+                ylabel('beta');
+                xlabel('iterations');
             end
             
             drawnow;
             
+        end
+        
+        function [h,lgd] = show_rocking_curve(angles,rock_curve,flag,fig_num,color,legend_str)
+           % this function displays the rocking curve with respect to a specified angular grid
+           
+           if strcmp(flag,'new')
+               figure(fig_num);
+               clf;
+               h = bar(angles,rock_curve,'FaceColor',color,'BarWidth',0.2,'EdgeColor',color);
+               lgd = legend(legend_str);
+           elseif strcmp(flag,'hold')
+               figure(fig_num);
+               ax = gca;
+               hold on;
+               h = bar(angles,rock_curve,'FaceColor',color,'BarWidth',0.2,'EdgeColor',color);
+               ax.Legend.String{size(ax.Legend.String,2)} = legend_str;
+               legend(ax.Legend.String);
+           end
+           
         end
         
     end

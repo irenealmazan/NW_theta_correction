@@ -62,7 +62,7 @@ classdef Phretrieval_functions
             
         end
                 
-        function [rho_new,beta_rho,norm_gradient] = rho_update(probe, rho,angles_list,support, data_exp,depth,err_0,ki,kf,X,Y,Z)
+        function [rho_new,beta_rho,norm_gradient] = rho_update(probe, rho,angles_list,support, data_exp,depth,err_0,tau_backtrack,beta_ini,counter_max,ki,kf,X,Y,Z)
             % this functions updates rho
             
             % gradient calculation
@@ -75,7 +75,7 @@ classdef Phretrieval_functions
             direction_rho = - (D/depth)*(gPIEiter.*support);
             
             % calculate the adaptative step length
-            [beta_rho] = GeneralGradient.calc_beta_adaptative_step(probe, rho,angles_list,data_exp,gPIEiter,err_0,direction_rho,'rho',ki,kf,X,Y,Z);
+            [beta_rho] = GeneralGradient.calc_beta_adaptative_step(probe, rho,angles_list,data_exp,gPIEiter,err_0,direction_rho,tau_backtrack,beta_ini,counter_max,'rho',ki,kf,X,Y,Z);
             
             % update the object:
             rho_new = rho + beta_rho * direction_rho;
@@ -84,7 +84,7 @@ classdef Phretrieval_functions
             norm_gradient = gPIEiter(:)*gPIEiter(:).';                     
         end
         
-        function [dth_new,dq_shift, grad_final_theta,norm_grad_theta,beta] = theta_update(probe, rho,angles_list,data_exp,Niter_theta,dthBragg,error_0,ki,kf,X,Y,Z)
+        function [dth_new,dq_shift, grad_final_theta,norm_grad_theta,beta] = theta_update(probe, rho,angles_list,data_exp,Niter_theta,error_0,tau_backtrack,beta_ini,counter_max,ki,kf,X,Y,Z)
             %%% this function calculates the gradient of the error metric with
             %%% respect to the position of the angles analytically, and
             %%% the correction theta  step
@@ -110,7 +110,7 @@ classdef Phretrieval_functions
                 direction = -squeeze(grad_final_theta(ntheta,:)');
                 
                 % calculate an adaptative step size:
-                [beta] = GeneralGradient.calc_beta_adaptative_step(probe, rho, dth_new,data_exp,grad_final_theta,error_0,direction,'theta',ki,kf,X,Y,Z);
+                [beta] = GeneralGradient.calc_beta_adaptative_step(probe, rho, dth_new,data_exp,grad_final_theta,error_0,direction,tau_backtrack,beta_ini,counter_max,'theta',ki,kf,X,Y,Z);
 
                 % corrected theta :
                 dth_new = dth_new + beta* direction;
