@@ -101,26 +101,36 @@ classdef DisplayResults
             hold on; plot(trueangles,'*r');
             
             if strcmp(flag,'rho')
-                subplot(235); plot(norm_grad_rho,'ob');title('norm of grad\_rho and beta');
-                yyaxis right;
-                plot(beta_rho,'*k');
+                subplot(235); 
+                plot(norm_grad_rho,'ob');
+                title('Rho');
+                xlabel('iterations');
+                
                 ax = gca;
                 set(ax.YAxis(1),'Color','b');
-                yyaxis left;
                 ylabel('norm of gradien');
+                
                 yyaxis right;
+                ax = gca;
+                set(ax.YAxis(2),'Color','k');
+                plot(beta_rho,'*k');
                 ylabel('beta');
-                xlabel('iterations');
+               
             elseif strcmp(flag,'theta')    
-                subplot(236); plot(norm_grad_theta,'ob');title('norm of grad\d_theta and beta');
-                yyaxis right;
-                plot(beta_theta,'*k');
-                set(ax.YAxis(1),'Color','b');
-                yyaxis left;
-                ylabel('norm of gradien');
-                yyaxis right;
-                ylabel('beta');
+                subplot(236); plot(norm_grad_theta,'ob');
+                title('Theta');
                 xlabel('iterations');
+                ylabel('norm of gradien');
+
+                ax = gca;
+                set(ax.YAxis(1),'Color','b');
+                
+                yyaxis right;
+                ax = gca;
+                set(ax.YAxis(2),'Color','k');               
+                plot(beta_theta,'*k');               
+                ylabel('beta');
+               
             end
             
             drawnow;

@@ -74,7 +74,7 @@ classdef DisplayFunctions
                       
         end
         
-        function h2 = display_calc_dqshift_deriv(dth_nominal,dq_shift_deriv0,dq_shift0,ki,kf,h1)
+        function h2 = display_calc_dqshift_deriv(dth_nominal,dq_shift_deriv0,dq_shift0,ki,kf,h1,legend_str)
            
             % h1 is the handle for the figure            
             th_fine_grid  = dth_nominal+[-180:10:180];                                
@@ -92,7 +92,7 @@ classdef DisplayFunctions
             plot( th_fine_grid,cstx +dq_shift_deriv0(1).*th_fine_grid,'r');
             
             title(['delta q_x at a nominal angle of ' num2str(dth_nominal)])
-            legend('dq\_{shift} calculated with the rotation matrix fine grid ','dq\_{shift} calculated with matrix at th_nominal','dqx\_{shift} analytical','derivative of dq\_{shift} calculated analytically')
+            legend('dq\_{shift} calculated with the rotation matrix fine grid ','dq\_{shift} calculated with matrix at th_nominal',['derivative of dq\_{shift} calculated ' legend_str])
             
             subplot(1,2,2);
             hold on;

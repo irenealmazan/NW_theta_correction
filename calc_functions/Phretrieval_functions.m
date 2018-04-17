@@ -81,7 +81,7 @@ classdef Phretrieval_functions
             rho_new = rho + beta_rho * direction_rho;
             
             % calculate the norm of the gradient:
-            norm_gradient = gPIEiter(:)*gPIEiter(:).';                     
+            norm_gradient = gPIEiter(:)'*gPIEiter(:);                     
         end
         
         function [dth_new,dq_shift, grad_final_theta,norm_grad_theta,beta] = theta_update(probe, rho,angles_list,data_exp,Niter_theta,error_0,tau_backtrack,beta_ini,counter_max,ki,kf,X,Y,Z)

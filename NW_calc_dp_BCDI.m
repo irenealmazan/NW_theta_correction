@@ -56,8 +56,3 @@ end
 
 middpind = round(numel(data_exp)/2);
 
-    
-% plot rocking curve: 
-figure;
-plot(delta_thscanvals,rock_curve,'*r');
-title('distorted rocking curve');

@@ -7,7 +7,7 @@ classdef RotationMatrix
     
     methods(Static)
        
-         function [Ry_rock,Ry_rock_deriv] = rock_curve(dth,dth_perturb)
+         function [Ry_rock, Ry_rock_deriv] = rock_curve(dth,dth_perturb)
             
             % This function calculates the rotation matrix which turns the qbragg peak in order to scan the
             % rocking curve and its derivative with respect to dth. Needs to be adapted for each experimental
@@ -21,14 +21,12 @@ classdef RotationMatrix
 %                 0 1 0;
 %                 -sind(dth_perturb) 0 cosd(dth_perturb)];
 %             
-%             Ry_rock_perturb_deriv = [sind(dth_perturb) 0 -cosd(dth_perturb);
-%                 0 0 0;
-%                 cosd(dth_perturb) 0 sind(dth_perturb)];
+            Ry_rock_perturb_deriv = [-sind(dth_perturb) 0 +cosd(dth_perturb);
+                0 0 0;
+                -cosd(dth_perturb) 0 -sind(dth_perturb)];
             
-%             Ry_rock_deriv = Ry_rock*Ry_rock_perturb_deriv;
-              Ry_rock_deriv =  [sind(dth) 0 -cosd(dth);
-                                    0 0 0;
-                            cosd(dth) 0 sind(dth)];
+             Ry_rock_deriv = (pi/180)*Ry_rock*Ry_rock_perturb_deriv;
+              
         end
         
         function [Ry,Rx] = detector(del,gam)

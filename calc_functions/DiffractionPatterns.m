@@ -27,7 +27,7 @@ classdef DiffractionPatterns
             
         end
         
-        function [dq_shift_deriv] = calc_dq_deriv_analytical(dth,ki,kf,qbragg)
+        function [dq_shift_deriv] = calc_dq_deriv_analytical(dth,ki_ini,kf_ini,qbragg)
             % This function calculates the first derivative of the vector dq
             % (linking the different positions of the detector at different theta
             % angles - differents points in the rocking curve)
@@ -35,9 +35,16 @@ classdef DiffractionPatterns
             dq_shift_deriv = zeros(numel(dth),3);
             
             for jj = 1:numel(dth)
-                [Ry_rock,Ry_rock_deriv] = RotationMatrix.rock_curve(dth(jj),1e-4);
-                dq_shift_deriv(jj,:) = (Ry_rock_deriv * kf' - Ry_rock_deriv * ki')-qbragg';
-                %dq_shift_deriv(jj,:) = (Ry_rock_deriv * qbragg');
+                [Ry,Ry_rock_deriv] = RotationMatrix.rock_curve(dth(jj),0.0);
+                
+                 ki(jj,:) = (Ry * ki_ini.').';
+                 kf(jj,:) = (Ry * kf_ini.').';
+                
+                dqshift(jj,:) = (kf(jj,:)-ki(jj,:))-qbragg;
+                %dq_shift_deriv(jj,:) = (Ry_rock_deriv *  dqshift(jj,:)');
+                
+                %dq_shift_deriv(jj,:) = (Ry_rock_deriv * kf' - Ry_rock_deriv * ki')-qbragg';
+                dq_shift_deriv(jj,:) = (Ry_rock_deriv * qbragg');
             end
             
          end

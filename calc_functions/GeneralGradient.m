@@ -13,13 +13,12 @@ classdef GeneralGradient
             
             [dqshift] = DiffractionPatterns.calc_dqshift_for_given_th(angles_list,ki_ini,kf_ini,kf_ini-ki_ini);
             
+            [~,~,~,Psij,Qterm] = DiffractionPatterns.calc_dp(dqshift,probe,rho,X,Y,Z);
+            
             for ii=1:numel(data)
-                
-                
-                [~,~,~,Psij,Qterm] = DiffractionPatterns.calc_dp(dqshift(ii,:),probe,rho,X,Y,Z);
-                
-                Psig = flipud(sqrt(data(ii).I)).*exp(1i*angle(squeeze(Psij(1,:,:))));%
-                grad = Psij - Psig; %%%% NEW % Psij - Psig;
+    
+                Psig = sqrt(data(ii).I).*exp(1i*angle(squeeze(Psij(ii,:,:))));%
+                grad = squeeze(Psij(1,:,:)) - Psig; %%%% NEW % Psij - Psig;
                 grad = fftshift(ifftn(fftshift(grad)));
                 grad = repmat(grad, [1 1 size(probe,3)]);
                 grad = grad .* conj(Qterm(ii).Qterm);
@@ -41,14 +40,12 @@ classdef GeneralGradient
             [dq_shift] = DiffractionPatterns.calc_dqshift_for_given_th(dth_nominal,ki,kf,qbragg);
                      
             % calculate the derivative of dq_shift with respect to theta:
-            %[dq_shift_deriv_analytic] = DiffractionPatterns.calc_dq_deriv_analytical(dth_nominal,ki,kf,qbragg);
-            [dq_shift_deriv_manual] = DiffractionPatterns.calc_dq_deriv_manually(dth_nominal,ki,kf,qbragg);
+            [dq_shift_deriv] = DiffractionPatterns.calc_dq_deriv_analytical(dth_nominal,ki,kf,qbragg);
              
             % display the derivative of dq_shift
             if 1
                 for jj = [1:round(numel(dth_nominal)/5):numel(dth_nominal)]
-                    %h2(jj).h = DisplayFunctions.display_calc_dqshift_deriv(dth_nominal(jj),dq_shift_deriv_analytic(jj,:),dq_shift(jj,:),ki,kf,30+jj);
-                    h3(jj).h = DisplayFunctions.display_calc_dqshift_deriv(dth_nominal(jj),dq_shift_deriv_manual(jj,:),dq_shift(jj,:),ki,kf,31+jj);
+                    h2(jj).h = DisplayFunctions.display_calc_dqshift_deriv(dth_nominal(jj),dq_shift_deriv(jj,:),dq_shift(jj,:),ki,kf,30+jj,'analitically');
                 end
             end
             [Psij_mod,~,~,FT_Psij,Qterm] = DiffractionPatterns.calc_dp(dq_shift,probe,rho,X,Y,Z);
@@ -58,7 +55,7 @@ classdef GeneralGradient
             for jj = 1:numel(dth_nominal)
                 
                 % derivative of Qterm with respect to dq_shift
-                deriv_Qterm_theta = (dq_shift_deriv_manual(jj,1).*X + dq_shift_deriv_manual(jj,3).*Z).*Qterm(jj).Qterm;
+                deriv_Qterm_theta = (dq_shift_deriv(jj,1).*X + dq_shift_deriv(jj,3).*Z).*Qterm(jj).Qterm;
                 
                 % derivative of the diffraction pattern with respect to dq_shift
                 Psij_deriv_theta = probe.*rho.*deriv_Qterm_theta;
@@ -175,6 +172,26 @@ classdef GeneralGradient
             
             
         end
+        
+         function [err_plusalpha] = calc_err_vs_rho_theta(probe, rho,angles_list,data,direction_rho,direction_theta,ki,kf,X,Y,Z)
+            % this function calculates the contour plot of the error metric
+            % as a function of rho and theta
+            
+            beta_rho = [1e-3 1e-2 1e-1 1];
+            beta_theta = [1e-3 1e-2 1e-1 1]*1e-5;
+            
+            err_plusalpha = zeros(numel(beta_rho),numel(beta_theta));
+            
+            for kk = 1:numel(beta_rho)
+                rho_beta = rho + beta_rho(kk) * direction_rho;                
+                for jj = 1:numel(beta_theta)                    
+                    theta_beta = angles_list + beta_theta(jj)*direction_theta;
+                    % estimate the value of the error at rho + alpha_ini*gradtot_rho
+                    err_plusalpha(kk,jj) =  DiffractionPatterns.calc_error_multiangle(probe, rho_beta, data,theta_beta,ki,kf,X,Y,Z);                    
+                end                
+            end            
+        end
+        
         
     end
         
